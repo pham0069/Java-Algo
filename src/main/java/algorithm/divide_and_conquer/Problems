@@ -1,0 +1,40 @@
+1) https://www.geeksforgeeks.org/find-if-array-has-an-element-whose-value-is-half-of-array-sum/
+Find if array has an element whose value is half of array sum
+* Problem:
+Given a sorted array (with unique entries), we have to find whether there exist an element(say X) which is exactly half
+the sum of all the elements of the array including X.
+
+* Examples:
+
+Input : A = {1, 2, 3}
+Output : YES
+Sum of all the elements is 6 = 3*2;
+
+Input : A = {2, 4}
+Output : NO
+Sum of all the elements is 6, and 3 is not present in the array.
+
+* Solution:
+- Calculate the array sum by traversing
+- If array is sorted, use binary search to find if the half value of sum exists in array
+- If array is not sorted, an efficient way is to use hash set
+- If array is sorted and non-negative, it is equivalent to check if the last element is half value of sum
+
+------------------------------------------------------------------------------------------------------------------------
+2) https://www.geeksforgeeks.org/find-element-array-sum-left-array-equal-sum-right-array/
+Find an element in array such that sum of left array is equal to sum of right array
+
+* Problem:
+Given, an array of size n. Find an element which divides the array in two sub-arrays with equal sum.
+
+* Examples:
+
+Input : 1 4 2 5
+Output : 2
+Explanation : If 2 is the partition, subarrays are : {1, 4} and {5}
+
+Input : 2 3 4 1 4 5
+Output : 1
+Explanation : If 1 is the partition, subarrays are : {2, 3, 4} and {4, 5}
+
+* Solution:

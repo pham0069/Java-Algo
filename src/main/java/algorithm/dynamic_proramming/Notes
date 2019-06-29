@@ -1,0 +1,134 @@
+I/ Dynamic Programming
+------------------------
+
+DP is an algorithmic paradigm that solves a given complex problem by breaking it into subproblems
+and stores the results of subproblems to avoid computing the same results again. There are two ways to store the
+values, corresponding to two patterns of solving DP problem: Tabulation and Memoization
+
+1. Tabulation Method – Bottom Up Dynamic Programming
+Denote a state for our DP problem to be dp[i]. dp[0] is base state and dp[n] is our destination state.
+If we start from the base state dp[0] and follow the state transition relation to reach destination
+state dp[n], we call it Bottom Up approach. The states are generally stored in a table, populated
+sequentially and calculated from previous states.
+
+For example: Find factorial x using tabulation method
+    int dp[] = new dp[MAXN] ;
+    // base case
+    dp[0] = 1;
+    for (int i = 1; i< =n; i++){
+        dp[i] = dp[i-1] * i;
+    }
+
+
+2. Memoization Method – Top Down Dynamic Programming
+
+To find the value for some state dp[n], we start from the states that can reach the destination state dp[n]
+following the state transition relation, till we reach the bottom most base state dp[0]. This is called top-down
+fashion of DP.
+
+For example: Find factorial x using memoization method
+    int dp[] = new dp[MAXN];//cache
+    int factorial(int x) {
+        if (x==0)
+            return 1;
+        if (dp[x]!=-1)
+            return dp[x];
+        return (dp[x] = x * factorial(x-1));
+    }
+
+We are storing the most recent cache up to a limit, so that if next time we got a call from the same state,
+we simply return it from the memory. This is why we call it memoization.
+
+
+II/ DP Use
+-----------
+
+Use DP to solve problems with one of the following properties:
+1) Overlapping Subproblems
+Like Divide and Conquer, Dynamic Programming combines solutions to sub-problems.
+DP is mainly used when solutions of same subproblems are needed again and again. Computed solutions to
+subproblems are stored in a table so that these don’t have to be recomputed.
+
+DP is not useful when there are no common (overlapping) subproblems because there is no point storing the
+solutions if they are not needed again. For example, Binary Search doesn’t have common subproblems. In the
+following recursive program for Fibonacci Numbers, there are many subproblems  which are solved again and again.
+/* simple recursive program for Fibonacci numbers */
+int fibonacci(int n){
+   if ( n <= 1 )
+      return n;
+   return fib(n-1) + fib(n-2);
+}
+We can see that the function fib(i) is called each time fib(j) is calculated where j > i. If we would have
+stored the value of fib(i), then instead of computing it again, we could have reused the old stored value.
+
+2) Optimal Substructure
+A given problems has Optimal Substructure Property if optimal solution of the given problem can be obtained
+by using optimal solutions of its subproblems.
+
+For example, the Shortest Path problem has following optimal substructure property:
+If a node x lies in the shortest path from a source node u to destination node v then the shortest path
+from u to v is combination of shortest path from u to x and shortest path from x to v.
+On the other hand, the Longest Path problem doesn’t have the Optimal Substructure property. Here by Longest
+Path we mean longest simple path (path without cycle) between two nodes.
+
+
+III/ How to solve a DP problem
+--------------------------------
+
+DP can solve some particular type of problems in Polynomial Time. DP solutions are faster than exponential
+brute method and can be easily proved for their correctness.
+
+Steps to solve a DP
+1) Identify if it is a DP problem
+2) Decide a state expression with least parameters
+3) Formulate state relationship
+4) Do tabulation or add memoization
+
+
+Step 1 : How to classify a problem as a Dynamic Programming Problem?
+- problems to maximize or minimize certain quantity
+- problems to count the arrangements under certain condition
+- problems with overlapping sub-problems or optimal sub-structure property
+
+Step 2 : Deciding the state
+DP problems are all about state and their transition. The state transition depends on the choice of state
+definition you make. A state can be defined as the set of parameters that can uniquely identify a certain
+position or standing in the given problem. This set of parameters should be as small as possible to reduce
+state space.
+
+For example: In our famous Knapsack problem, we define our state by two parameters index and weight
+i.e DP[index][weight]. Here DP[index][weight] tells us the maximum profit it can make by taking items from
+range 0 to index having the capacity of sack to be weight. Therefore, here the parameters index and weight
+together can uniquely identify a sub-problem for the knapsack problem.
+
+Step 3 : Formulating a relation among the states
+This part is the hardest part of for solving a DP problem and requires a lot of intuition, observation
+and practice.
+
+Step 4 : Adding memoization or tabulation for the state
+This is the easiest part of a dynamic programming solution. We just need to store the state answer so
+that next time that state is required, we can directly use it from our memory.
+
+Adding memoization to the above code
+
+IV/ NP-Complete DP problems
+-----------------------------
+
+1. NP (nondeterministic polynomial time)
+- A problem is assigned to NP class if it can be solved in polynomial time (n^k) using non-deterministic Turing machine
+- A nondeterministic Turing machine is a "parallel" Turing machine that can take many computational paths simultaneously,
+with the restriction that the parallel Turing machines cannot communicate.
+- A Turing machine is a theoretical computing machine invented by Alan Turing (1937) to serve as an idealized model for
+mathematical calculation. A Turing machine consists of a line of cells known as a "tape" that can be moved back and forth,
+an active element known as the "head" that possesses a property known as "state" and that can change the property known
+as "color" of the active cell underneath it, and a set of instructions for how the head should modify the active cell
+and move the tape.
+At each step, the machine may modify the color of the active cell and change the state of the head. After this, it
+moves the tape one unit to the left or right.
+The number of n-state s-color Turing machines is (2ns)^ns
+https://www.cl.cam.ac.uk/projects/raspberrypi/tutorials/turing-machine/one.html
+
+2. Subset Sum Problem
+Given a set of number, check if
+
+

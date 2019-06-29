@@ -1,0 +1,20 @@
+Design patterns
+- represent some of the best practices adapted by experienced OO sw developers
+- systematically name, motivate, explain a general design
+to address a recurring design problem in OO system
+
+3 types
+1. Creational
+About class instantiation or object creation
+Class instantiation uses inheritance effectively
+Object creation uses delegation effectively
+E.g Factory, Builder, Singleton, Object pool, Prototype
+
+2. Structural
+About organizing different classes and objects to form larger structures and provide new functionality
+E.g Adapter, Bridge, Composite, Decorator
+
+3. Behavioral
+About identifying common communication patterns btw objects and realize these patterns
+E.g Chain of responsibility, Command, Interpreter, Mediator
+

@@ -1,0 +1,224 @@
+FENWICK TREE
+
+1. Fenwick Tree or Binary Indexed Tree is a data structure
+to efficiently execute two types of queries on a numeric array
+- Update: modify the value of array element
+- Range-sum: sum of the array elements within a range
+=======================================
+2. Naive solutions
+a. to maintain array content.
+Update takes O(1) but range-sum takes O(n) on average
+
+b. to maintain a sum array where sum[i] = sum of array elements indexed from 0 to i.
+For example, array = {3, 2, 0, 6, 5, -1, 2}
+Accumulative sum array = {3, 5, 5, 11, 16, 15, 17}
+Range-sum could be done in O(1)
+but update could take up to O(n).
+=======================================
+3. Alternative solution is segment-tree
+But Fenwick Tree is more space-efficient.
+
+ * Space complexity is O(n)
+ * Time complexity to create the tree is O(nlogn)
+ * Time complexity to update value is O(logn)
+ * Time complexity to get range-sum is O(logn)
+=======================================
+4. Why BIT works?
+- Any positive integers can be represented as sum of powers of 2
+- For example, 11 can be represented as 8+2+1.
+The BIT tree's indices should look like below
+                   (0)
+                    |
+        -------------------------
+        |       |       |       |
+       (1)     (2)     (4)     (8)
+                |    -------  -------
+                |    |     |  |     |
+               (3)  (5)   (6)(9)   (10)
+                           |        |
+                          (7)      (11)
+- Given a child index's binary representation,
+if you flip its right-most bit 1 to 0, you get the binary rep of its parent index
+** For example
+10 = b1010 -> b1000 = 8
+8 = b1000 -> b0000 = 0
+7 = b111 -> b110 = 6
+
+- In this BIT tree, the node at index i will store
+the sum of k elements starting from array element indexed j
+let say in the binary rep, the right-most bit 1 is at index l
+-> k = 2^l
+j = i - k (also index of parent)
+** For example
+10 = b1010 -> store sum of 2(2^1) elements starting from element 8 (10-2)
+8 = b1000 -> store sum of 8(2^3) elements starting from element 0 (8-0)
+7 = b111 -> store sum of 1(2^0) elements starting from element 6 (7-1)
+
+Below shows the range of array index that the tree's index should sum to
+                    x
+                    |
+        -------------------------
+        |       |       |       |
+       [0,0]   [0,1]   [0,3]   [0,7]
+                |    -------   -------
+                |    |     |   |     |
+              [2,2] [4,4][4,5][8,8] [8,9]
+                           |         |
+                          [6,6]     [10,10]
+
+
+
+- Every node of BIT stores sum of n elements where n is a power of 2.
+- Sum of array elements indexed from 0 to i
+is sum of all elements in BIT tree in the path from root to node (i+1)
+Therefore getting range-sum takes only up to logn nodes
+** For example
+Sum of a[0..6] = sum of tree nodes on path from 0 to 7, i.e. (0, 4, 6, 7)
+= sum of a[0..3] + sum of a[4..5] + sum of a[6, 6]
+= t[4] + t[6] + t[7]
+
+- Updating an array element at index i does not require updating the whole tree
+it only involves updating some siblings nodes of the tree
+Therefore updating takes only up to logn nodes
+** For example
+updating a[0] requires updating t[1], t[2], t[4], t[8]
+updating a[8] requires updating t[9], t[10]
+
+=======================================
+5. Insertion
+a = [3, 2, -1, 6, 5, 4, -3, 3, 7, 2, 3]
+
+- insert a[0] = 3 -> t[1] = a[0] = 3
+
+                   (0)
+                    |
+        -------------------------
+        |       |       |       |
+        3
+
+- insert a[1] = 2 -> t[2] = a[0] + a[1] = 5
+
+                   (0)
+                    |
+        -------------------------
+        |       |       |       |
+        3       5
+
+- insert a[2] = -1 -> t[3] = a[2] = -1
+
+                   (0)
+                    |
+        -------------------------
+        |       |       |       |
+        3       5
+                |
+               -1
+
+- insert a[3] = 6 -> t[4] = a[0] + ... + a[3] = 10
+
+                   (0)
+                    |
+        -------------------------
+        |       |       |       |
+        3       5       10
+                |
+               -1
+
+- insert a[4] = 5 -> t[5] = a[4] = 5
+                   (0)
+                    |
+        -------------------------
+        |       |       |       |
+        3       5       10
+                |       |
+               -1   ---------
+                    |
+                    5
+
+- insert a[5] = 4 -> t[6] = a[4] + a[5] = 9
+                   (0)
+                    |
+        -------------------------
+        |       |       |       |
+        3       5       10
+                |       |
+               -1   ---------
+                    |       |
+                    5       9
+
+- insert a[6] = -3 -> t[7] = a[6] = -3
+
+                   (0)
+                    |
+        -------------------------
+        |       |       |       |
+        3       5       10
+                |       |
+               -1   ---------
+                    |       |
+                    5       9
+                            |
+                            -3
+
+- insert a[7] = 3 -> t[8] = a[0] + ... + a[7] = 19
+
+                     (0)
+                      |
+          -------------------------
+          |       |       |       |
+          3       5       10     19
+                  |       |
+                 -1   ---------
+                      |       |
+                      5       9
+                              |
+                              -3
+
+
+- insert a[8] = 7 -> t[9] = a[8] = 7
+
+                     (0)
+                      |
+          -------------------------
+          |       |       |       |
+          3       5       10     19
+                  |       |       |
+                 -1   -------   -------
+                      |      |  |
+                      5      9  7
+                             |
+                             -3
+- insert a[9] = 2 -> t[10] = a[8] + a[9] = 9
+
+                     (0)
+                      |
+          -------------------------
+          |       |       |       |
+          3       5       10     19
+                  |       |       |
+                 -1   -------   -------
+                      |      |  |     |
+                      5      9  7     9
+                             |
+                             -3
+
+- insert a[10] = 3 -> t[11] = a[10] = 3
+
+                     (0)
+                      |
+          -------------------------
+          |       |       |       |
+          3       5       10     19
+                  |       |       |
+                 -1   -------   -------
+                      |      |  |     |
+                      5      9  7     9
+                             |        |
+                             -3       3
+
+6. Sum
+- get sum from a[0..5] = t[6] + t[4] + t[0] = 9 + 10 = 19
+- get sum from a[0..9] = t[10] + t[8] + t[0] = 9 + 19 = 28 
+- get sum from a[6..9] = 28 - 19 = 9
+
+=======================================

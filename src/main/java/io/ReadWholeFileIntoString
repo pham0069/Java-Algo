@@ -1,0 +1,29 @@
+https://www.novixys.com/blog/create-java-string-file-contents/
+
+1. Use Files of java.nio.file
+byte[] buffer = Files.readAllBytes(Path.get(pathName));
+String s = new String(buffer, StandardCharsets.UTF_8);
+
+2. Use Scanner with delimiter as EOF
+Scanner sc = new Scanner(new File(pathName));
+String s = sc.useDelimiter("\\A").next();
+
+3. Use RandomAccessFile to get direct map between file content to buffer
+int fileLength = new File(pathName).length();
+RandomAccessFile file = new RandomAccessFile(pathName, "r");
+MappedByteBuffer buffer = file.getChannel().map(MapMode.READ_ONLY, 0, fileLength);
+
+String s = StringBuilder(StandardCharsets.UTF_8.decode(buffer));
+
+4. Read buffers until end of file
+
+FileReader reader = new FileReader(pathName);
+char[] buffer = new char[2048];
+StringBuilder builder = new StringBuilder();
+int len;
+while (len = in.read(buffer, 0, buffer.length) != -1) {
+    builder.append(buffer, 0, len);
+}
+String s = builder.toString();
+
+Doing benchmark, the performance order is 1 (nio), 4(simple), 3 (nmap), 2(scanner)

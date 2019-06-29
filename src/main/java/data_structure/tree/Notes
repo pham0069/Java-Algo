@@ -1,0 +1,37 @@
+Why Trees?
+- store info that naturally forms a hierarchy
+- trees can provide moderate access (faster than linked list, slower than array)
+- trees can provide moderate insertion/deletion (faster than array, slower than linked list)
+- trees dont have upper limit on number of nodes
+=====================================================================
+Binary tree properties
+
+1. Binary tree: each node has at most 2 children (left and right)
+2. Max number of nodes at level L of binary tree is 2^(L-1)
+Root level is 1, with 1 node
+3. Max number of nodes of a binary tree of height H is 2^H-1
+4. In a binary tree with N nodes,
+min possible height is log2(N+1)
+max possible height = N
+5. A binary tree with L leaves has at least log2L+1 levels
+6. A binary tree where evey node has 0 or 2 children
+number of leaf node is always one more than nodes with 2 children
+(Proof by induction)
+=====================================================================
+Binary tree types
+1. Full binary tree: each node has 0 or 2 children
+Number of leaf nodes = number of internal nodes + 1
+2. Complete binary tree: all levels are filled except possibly the last level
+the last level has all keys as left as possible
+3. Perfect binary tree: all internal nodes have 2 children
+all leaves are at same level
+Perfect binary tree of height H has 2^H-1 nodes
+4. Balanced binary tree: height of tree is O(log n) where n is number of nodes
+5. Degenerate (or pathological) tree: every internal node has 1 child
+=====================================================================
+Degree sum formula
+Sum of degree(v) (for all vertices) = 2*number of edges
+
+Handshaking Lemma
+Number of vertices with odd degree is always even (deduced from above formula)
+=====================================================================

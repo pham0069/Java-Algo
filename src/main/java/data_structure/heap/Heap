@@ -1,0 +1,39 @@
+
+https://www.geeksforgeeks.org/binary-heap/?ref=lbp
+I. Binary heap
+
+1. Introduction
+A Binary Heap is a Binary Tree with following properties.
+- It’s a complete tree
+(All levels are completely filled except possibly the last level
+and the last level has all keys as left as possible).
+-> This property of Binary Heap makes them suitable to be stored in an array.
+
+- A Binary Heap is either Min Heap or Max Heap.
+In a Min Binary Heap, the key at root must be minimum among all keys present in Binary Heap.
+The same property must be recursively true for all nodes in Binary Tree.
+Max Binary Heap is similar to MinHeap.
+
+2. Example
+
+        10                       10
+       /  \                    /    \
+      20   100                15    30
+     /                      /  \    /  \
+    30                     40  50  100  40
+
+3. Presentation
+- Similar to segment tree, it can represented in array
+- Root is arr[0]
+- for node arr[i], left child = 2*i+1, right child = 2*i+2
+          1(0)
+       /       \
+      3(1)     6(2)
+     /  \      /
+   5(3) 9(4)  8(5)
+
+====================================================================================================
+
+
+2. Binomial heap
+3. Fibonacci heap

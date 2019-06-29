@@ -1,0 +1,75 @@
+https://www.topcoder.com/community/competitive-programming/tutorials/the-importance-of-algorithms/
+https://www.topcoder.com/community/competitive-programming/tutorials/how-to-find-a-solution/
+
+1. Algorithm
+well-defined computational procedure that takes some value, or set of values, as input and produces some value, or set
+of values as output
+
+2. Run-time analysis
+
+Exact speed of algo depends on
+    where the algorithm is run,
+    the exact details of its implementation,
+    the given input state
+
+Typically measure the runtime relative to the size of the input, i.e. O notation
+O(N^2) -> if you were to run an implementation of the algorithm on your computer with an input of size N,
+it would take C*N^2 seconds, where C is some constant that doesn’t change with the size of the input.
+
+Worst-case, best-case runtime
+Average-case runtime
+    average of how long it would take the algo to run if it were given all possible inputs
+
+Approximate completion time for algorithms, N = 100
+    O(Log(N))   10-7 seconds
+    O(N)        10-6 seconds
+    O(N*Log(N)) 10-5 seconds
+    O(N^2)      10-4 seconds
+    O(N^6)      3 minutes
+    O(2^N)      1014 years
+    O(N!)       10142 years
+
+3. Algorithm classes
+
+Sorting:
+    mergeSort, heapSort, quickSort O(NlogN)
+Shortest path:
+    Dijkstra O(EVlogV), heuristic A* (approximately faster in real-world app)
+Approximate algo:
+    give near-optimal solution at faster pace than optimal solution
+    NP problem (non-deterministic polynomial): no one knows a good way to solve them optimally
+Random algo:
+    not improve algo in worst case
+    good algo in average case
+Compression:
+    LZW compresses to a bit-smaller file, can decompress to original file
+    JPG, MP3 compresses into much smaller file, decompresses to final result lower quality than the original
+
+Max flow
+Sequence comparison
+
+4. Problem statements
+Introduction:
+    high-level description of a situation (can ignore)
+Definition:
+    help to write class name, method name, args, return type
+    read notes if available
+Constraints:
+    list of constraints on inputs
+Examples:
+
+5. How to find solution
+Straight-forward problems
+BFS:
+    fewest number of steps to reach certain state from start state
+Flood fill
+Brute-force
+Backtracking
+Dynamic programming
+    usually N is neither too small or too big
+    exist states and one or more ways to reach one greater state from one another lower one
+Max flow
+    N should be < 500
+    there should be graph with capacities
+Optimal pair matching
+    list of items for which other items should be assigned under some rules

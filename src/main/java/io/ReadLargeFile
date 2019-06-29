@@ -1,0 +1,43 @@
+https://www.novixys.com/blog/java-reading-large-file-efficiently/
+http://homes.sice.indiana.edu/yye/lab/teaching/spring2014-C343/datatoobig.php
+https://www.baeldung.com/java-read-lines-large-file
+
+1. Load whole large file into memory
+Whole file can be loaded into String, using nio Files as follows:
+String s = new String(Files.readAllBytes(Path.get(pathName)), StandardCharsets.UTF_8);
+
+The problem is OutOfMemoryError occurs if file size is large, since whole file cannot fit the main memory
+Usually we don't need all of the content in memory at once. Instead, we just need to be able to iterate through part of
+file (lines, chunks...) once, do some processing and throw it away
+
+2. Load binary file in Chunks
+try (BufferedInputStream in = new BufferedInputStream(new FileInputStream(pathName)) {
+    byte[] buffer = new byte[4096];
+    int len;
+    while ((len = in.read(buffer)) != -1) {
+        //process buffer here
+    }
+}
+
+3. Read text file Line By Line
+try (BufferedReader in = new BufferedRead(new FileReader(pathName))){
+    String line;
+    while ((line = in.readLine()) != null) {
+        //process line here
+    }
+}
+
+Other methods to read line by line are using java io Scanner, apache LineIterator (3rd party library):
+
+try (Scanner sc = new Scanner(new FileInputStream(pathName))) {
+    while (sc.hasNextLine() {
+        //process line here
+    }
+}
+
+try (LineIterator it = FileUtils.lineIterator(file, "UTF-8")){
+    while (it.hasNext()) {
+        //process line here
+    }
+}
+

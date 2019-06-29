@@ -1,0 +1,42 @@
+Sorting Algorithms
+https://www.geeksforgeeks.org/sorting-algorithms/
+
+A Sorting Algorithm is used to rearrange a given array or list elements according to a comparison operator on the
+elements. The comparison operator is used to decide the new order of element in the respective data structure.
+
+https://www.geeksforgeeks.org/time-complexities-of-all-sorting-algorithms/
+I. Sorting Terminology
+1) In-place sorting
+An in-place sorting algorithm uses constant extra space for producing the output, typically by modifying the given array
+only. It sorts the list only by modifying the order of the elements within the list.
+For example, Insertion Sort and Selection Sorts are in-place sorting algorithms as they do not use any additional space
+for sorting the list and a typical implementation of Merge Sort is not in-place, also the implementation for counting
+sort is not in-place sorting algorithm.
+
+2) Internal and External Sortings
+https://www.geeksforgeeks.org/external-sorting/
+When all data is placed in-memory, then sorting is called internal sorting.
+
+External sorting is a term for a class of sorting algorithms that can handle massive amounts of data. External sorting
+is required when the data being sorted do not fit into the main memory of a computing device (usually RAM) and instead
+they must reside in the slower external memory (usually a hard drive). External sorting typically uses a hybrid
+sort-merge strategy. In the sorting phase, chunks of data small enough to fit in main memory are read, sorted, and
+written out to a temporary file. In the merge phase, the sorted sub-files are combined into a single larger file.
+
+One example of external sorting is the external merge sort algorithm, which sorts chunks that each fit in RAM, then
+merges the sorted chunks together. We first divide the file into runs such that the size of a run is small enough to fit
+into main memory. Then sort each run in main memory using merge sort sorting algorithm. Finally merge the resulting runs
+together into successively bigger runs, until the file is sorted.
+
+3. Stable sorting
+https://www.geeksforgeeks.org/stability-in-sorting-algorithms/
+http://www.math.uic.edu/~leon/cs-mcs401-s08/handouts/stability.pdf
+In stable sorting algorithm, two objects with equal keys appear in the same order in sorted output as they appear in the
+input array to be sorted.
+
+When equal elements are indistinguishable, such as with integers, or more generally, any data where the entire element
+is the key, stability is not an issue. Stability is also not an issue if all keys are different. Stable algorithm matters
+when we want to preserve the order of objects after sorting.
+
+Bubble Sort, Insertion Sort, Merge Sort, Count Sort etc. are stable sorting algorithms by nature.
+Quick Sort, Heap Sort are unstable but can be made stable by taking the position of the elements into consideration.

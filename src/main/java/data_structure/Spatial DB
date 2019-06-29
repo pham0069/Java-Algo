@@ -1,0 +1,32 @@
+1. Pin code (India) / Zip code (USA)
+- e.g. 400050
+    4      0           0           0    5               0
+    zone    subzone     headoffice      postoffice
+
+- Assign every location in the country with an id,
+that can be attached to a post office
+
+- Problem:
+Start 400050, destination 400051, distance is small
+but maybe there's a railway station btw these 2 locations
+-> actual travelling distance is larger
+
+2. Requirements of location-based DB
+
+- measurable distance
++ uniform assignment (assigning id to every location)
++ scalable granularity (able to break a region into smaller size)
+
+- proximity
+(nearest neighbor search/ range search)
+
+3. How to present a location ?
+
+- coordinate (latitude, longitude)
++ convenient for measuring distance
++ proximity check: O(N^2) if we check for all points in DB
+
+
+
+
+

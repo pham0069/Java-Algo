@@ -1,0 +1,81 @@
+1. Pattern mining
+Looking at the algorithm competition
+as a collection of diverse yet classifiable story problems
+
+Could be wrong mindset to base on experience
+Unlearn what you have learnt
+Relearn critical thought
+
+2. Coding Kata
+Take any problem in the Practice Rooms that you haven’t done.
+Fight through it, no matter how long it takes, and figure it out (use the editorial from the competition as a last resort).
+Get it to pass system tests, and then note how long you took to solve it.
+Next, clear your solution out, and try to type it in again (obviously cutting and pasting will ruin the effect).
+Again, get it to pass system tests.
+Note how long it took you to finish the second time.
+Then, clear it out and do the problem a third time, and again get it to pass system tests.
+Record this final time.
+
+
+The kata demonstrates to its practitioners the mental experience of
+having a plan, encouraging the type of discipline it takes to sit and think the problem through
+
+3. Approach tactics
+Ways to formulate your approach, transform it, redirect it, and solidify it into code
+that get you closer to the solution or at least point you away from the wrong solution.
+
+To decide your preferences among approach tactics, it is very useful to record the solutions to your problems,
+and to write up a post-SRM analysis of your own performance.
+
+Writing up your approaches help you to
+    understand your own thoughts while coding,
+    allow you to critique your own pitfalls and work on them in a constructive manner.
+Remember, it is difficult to improve that which you don’t understand
+
+4. Breaking down problems
+Start by planning out what your main function needs
+Then think about how you’ll do the subfunctions
+Very applicable to recursive algo
+
+5. Plan to debug
+breaking-down approach useful in
+    detect which methods has bug
+    bug fix is universally applied to whole code
+
+6. Atomic code
+7. Bottom-up programming
+8. Brute force
+Try all the configurations ->
+simpler, not error-prone
+not optimized, can use to test small case for elegant solution
+9. Algorithms
+When u study algo, u need to
+    understand how the code works
+    how long it will take to run
+    what parts of code can be changed
+    what effect any changes will have on algo
+Need to know how to code the algorithm by memory
+    before trying to use it in any approach
+    without experience of implementing an algo,
+    it becomes hard to tell whether your bugs are being caused by a faulty impl or faulty input
+Good to practice different ways to use algo creatively
+    to solve different problems
+Better to study broad-based algo techniques (divide-and-conquer, dynamic, greedy)
+    before studying focused algo
+10. Manipulating the domain
+Manipulate the domain to something more convenient
+    -> create easier or more recognizable problem
+Procedure
+    manipulate domain (A)
+    solve problem
+    correct domain (A^-1)
+Extreme care needed when debugging
+11. Unwinding the definitions
+?
+12. The problem is doable
+13. Case reduction
+Break up problem into cases
+14. Plans within plans
+More than 1 tactics need applying
+15. Tactical permutation
+16. Backtracking from Flawed approach

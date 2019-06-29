@@ -1,0 +1,90 @@
+https://www.geeksforgeeks.org/kruskals-minimum-spanning-tree-algorithm-greedy-algo-2/
+https://www.geeksforgeeks.org/applications-of-minimum-spanning-tree/
+
+
+I/ What is Minimum Spanning Tree?
+* Given a connected and undirected graph, a spanning tree of that graph is a subgraph that is a tree and connects all the
+vertices together. A single graph can have many different spanning trees. A minimum spanning tree (MST) or minimum
+weight spanning tree for a weighted, connected and undirected graph is a spanning tree with weight less than or equal
+to the weight of every other spanning tree.
+
+* The weight of a spanning tree is the sum of weights given to each edge of
+the spanning tree.
+
+* How many edges does a minimum spanning tree has?
+A minimum spanning tree has (V – 1) edges where V is the number of vertices in the given graph.
+
+II/ Application of MST?
+
+1) Network design.
+– telephone, electrical, hydraulic, TV cable, computer, road
+The standard application is to a problem like phone network design. You have a business with several offices; you want
+to lease phone lines to connect them up with each other; and the phone company charges different amounts of money to
+connect different pairs of cities. You want a set of lines that connects all your offices with a minimum total cost.
+It should be a spanning tree, since if a network isn’t a tree you can always remove some edges and save money.
+Example https://www.geeksforgeeks.org/minimum-cost-connect-cities/
+
+2) Approximation algorithms for NP-hard problems.
+– traveling salesperson problem, Steiner tree
+A less obvious application is that the minimum spanning tree can be used to approximately solve the traveling salesman
+problem. A convenient formal way of defining this problem is to find the shortest path that visits each point at least
+once.
+
+Note that if you have a path visiting all points exactly once, it’s a special kind of tree. If you have a path visiting
+some vertices more than once, you can always drop some edges to get a tree. So in general the MST weight is less than
+the TSP weight, because it’s a minimization over a strictly larger set.
+
+3) Indirect applications.
+– max bottleneck paths
+– LDPC codes for error correction
+– image registration with Renyi entropy
+– learning salient features for real-time face verification
+– reducing data storage in sequencing amino acids in a protein
+– model locality of particle interactions in turbulent fluid flows
+– autoconfig protocol for Ethernet bridging to avoid cycles in a network
+
+4) Cluster analysis
+k clustering problem can be viewed as finding an MST and deleting the k-1 most expensive edges.
+
+III/ MST algorithm
+
+Kruskal
+Prim
+Boruvka
+Reverse delete
+
+IV/ Steiner tree
+https://www.geeksforgeeks.org/steiner-tree/
+
+1) Definition
+Given a graph and a subset of vertices in the graph, a steiner tree spans though the given subset. The Steiner Tree may
+contain some vertices which are not in given subset but are used to connect the vertices of subset.
+The given set of vertices is called Terminal Vertices and other vertices that are used to construct Steiner tree are
+called Steiner vertices.
+The Steiner Tree Problem is to find the minimum cost Steiner Tree.
+
+2) Application
+Any situation where the task is minimize cost of connection among some important locations like VLSI Design, Computer
+Networks
+
+3) Solution
+Finding out Minimum Spanning Tree is polynomial time solvable, but Minimum Steiner Tree problem is NP Hard and related
+decision problem is NP-Complete. There are no polynomial time solutions that always give optimal cost. Therefore, there
+are approximate algorithms to solve the same. Below is one simple approximate algorithm.
+
+* Start with a subtree T consisting of one given terminal vertex
+* While T does not span all terminals
+   a) Select a terminal x not in T that is closest to a vertex in T.
+   b) Add to T the shortest path that connects x with T
+
+V/ Total number of spanning trees in a graph
+If a graph is a complete graph, then total number of spanning trees is V^(V-2) as in Cayley’s formula.
+
+What if the graph is not complete?
+1) Create Adjacency Matrix for the given graph.
+2) Replace all the diagonal elements with the degree of nodes. For eg. element at (1,1) position of adjacency
+matrix will be replaced by the degree of node 1, element at (2,2) position of adjacency matrix will be replaced by
+the degree of node 2, and so on.
+3) Replace all non-diagonal 1’s with -1.
+4) Calculate co-factor for any element.
+5) The co-factor that you get is the total number of spanning tree for that graph.

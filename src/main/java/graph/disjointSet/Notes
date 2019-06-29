@@ -1,0 +1,65 @@
+https://www.geeksforgeeks.org/union-find-algorithm-set-2-union-by-rank/
+https://www.geeksforgeeks.org/disjoint-set-data-structures-java-implementation/
+
+1) Disjoint Set is a DS that supports 3 operations:
+1. makeSet: create a set with single element
+2. union: merge 2 sets into one
+3. findSet: find the set containing a given element, typically to find the set representative
+
+2) Application
+Disjoint set is used to detect cycle in a graph as in Kruskal algorithm
+For efficient performance, we also use union by rank and path compression
+
+3) Example:
+Given 7 nodes 1..7, makeSet for each of them
+union(1, 2) -> {1*, 2} where 1 is rep of set
+findSet(1) = 1
+findSet(2) = 1
+union(2, 3) -> {1*, 2, 3}
+union(4, 5) -> {4*, 5}
+union(6, 7) -> {6*, 7}
+union(5, 6} -> {4*, 5, 6, 7}
+union(3, 7} -> {1, 2, 3, 4*, 5, 6, 7}
+
+4) Union by rank
+Make the node with higher rank as parent and lower rank as child
+The purpose is to reduce the depth of finding set for a node.
+If path compression is used, union by rank will change the root for smaller set, rather than bigger set, which can save
+union cost.
+Node structure:
+Node {
+    int data
+    int rank
+    Node parent
+}
+Each node is initialized with rank 0, parent null and data it contains
+Non-root node's rank does not matter.
+
+5) Path compression
+If a node points to a new parent, make all its children to point to that new parent as well
+This aims to reduce the depth of finding set for a node. A node's parent points directly to the set's root, instead
+of going through multiple parent levels.
+
+
+6) Example for union by rank and path compression
+
+union(1, 2) -> as 1 and 2 has same rank, select by random the node to be parent
+            -> {(1, 1, null)*, (2, 0, 1)} where node 1 has rank 1, parent null, node 2 has rank 0, parent 1
+union(2, 3) -> as node 2's set has root rank (1) > node 3's set (0), select node 1 as parent
+            -> {(1, 1, 1)*, (2, 0, 1), (3, 0, 1)}
+union(4, 5) -> {(4, 1, 4)*, (5, 0, 4)}
+union(6, 7) -> {(6, 1, 6)*, (7, 0, 6)}
+union(5, 6} -> as node 5's set and node 6's set has same root rank (1, i.e. rank of nodes 4 and 6),
+                select by random the node to be parent, e.g. 4
+            -> {(4, 2, 4)*, (5, 0, 4), (6, 1, 4), (7, 0, 6)}
+                here we can do path compression, to make 7 point directly to root 4, instead of pointing to old parent 6
+            -> {(4, 2, 4)*, (5, 0, 4), (6, 0, 4), (7, 0, 4)}
+union(3, 7} -> merge by union rank: make node 4 as set's root
+                {(1, 1, 4)*, (2, 0, 1), (3, 0, 1), (4, 2, 4)*, (5, 0, 4), (6, 0, 4), (7, 0, 4)}
+            -> path compression: make node 4 as parents of nodes 2 and 3
+                {(1, 0, 4)*, (2, 0, 4), (3, 0, 4), (4, 2, 4)*, (5, 0, 4), (6, 0, 4), (7, 0, 4)}
+
+7) For n elements, m operations
+Space complexity is O(n)
+Time complexity is O(m*alpha(n)) where alpha(n) is proved to be very slow-growing function: alpha(n) <= 4
+Effectively time complexity is O(m*4) ~ O(m)

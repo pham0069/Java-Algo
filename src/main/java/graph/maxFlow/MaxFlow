@@ -1,0 +1,272 @@
+https://www.geeksforgeeks.org/max-flow-problem-introduction/
+
+
+1. Maximum Flow Problem
+- Given a directed graph which represents a flow network where every edge has a capacity.
+Also given two vertices source ‘s’ and sink ‘t’ in the graph,
+find the maximum possible flow from s to t with following constraints:
+a) Flow on an edge doesn’t exceed the given capacity of the edge.
+b) Incoming flow is equal to outgoing flow for every vertex except s and t.
+
+- This network flow can represent different real-world problems like
+ * highway traffic
+ * water amount in the water pipe
+ * electric current under the wire
+
+- For example
+ Edge     Capacity
+ s -> 1     3
+ s -> 2     2
+ 1 -> 2     5
+ 1 -> t     2
+ 2 -> t     3
+
+         s
+       /   \
+      v     v
+      1 <-- 2
+      \     /
+       v   v
+         t
+
+================================================================================
+
+2. Terms
+- capacity: maximum amount that an edge can hold
+e.g: s-> 1 has capacity of 2
+that means the amount this edge can carry should be <= 2
+
+- residual capacity: capacity - flow
+e.g. initially, s-> 1 does not carry anything, i.e. flow = 0
+-> it has residual capacity of 2 - 0 = 2
+
+- augmented path: a path from s - t
+such that the min residual capacity on an edge of this path > 0
+e.g. an augmented path is s->1->t
+initially the flow on edge s-1 and 1-t are both 0
+the residual capacity on them are 2 and 3 respectively
+-> min residual capacity of this path is min (2, 3) = 2 > 0
+-> this path can be augmented by 2, i.e. plus 2 for each edge's amount
+After this augmentation, residual capacity of s-1 is 2- 2 =0, 1-t is 3-2 = 1
+
+================================================================================
+
+3. Naive greedy algorithm approach
+- search for an augmented path
+- update the amount of all edges on the path with the min residual capacity
+- continue until no more augmented path found
+
+- e.g with the graph above
+ * initially, the flow is 0
+
+ Edge     Capacity        Flow      Residual
+ s -> 1     3               0           3
+ s -> 2     2               0           2
+ 1 -> 2     5               0           5
+ 1 -> t     2               0           2
+ 2 -> t     3               0           3
+
+ * augmented path s-1-2-t, min rc = 3
+
+  Edge     Capacity        Flow      Residual
+  s -> 1     3               3           0  *
+  s -> 2     2               0           2
+  1 -> 2     5               3           2  *
+  1 -> t     2               0           2
+  2 -> t     3               3           0  *
+
+ * no more augmented path -> algo terminates with max flow = 3
+
+- This is actually is NOT optimal solution, as max flow = 5
+ If the augmented path is searched in different order like below
+ * s-2-t, min rc = 2
+
+ Edge     Capacity        Flow      Residual
+ s -> 1     3               0           3
+ s -> 2     2               2           0  *
+ 1 -> 2     5               0           5
+ 1 -> t     2               0           2
+ 2 -> t     3               2           1  *
+
+ * s-1-t, min rc = 2
+
+ Edge     Capacity        Flow      Residual
+ s -> 1     3               2           1  *
+ s -> 2     3               2           0
+ 1 -> 2     5               0           5
+ 1 -> t     2               2           0  *
+ 2 -> t     3               2           1
+
+ * s-1-2-t, min rc = 1
+ Edge     Capacity        Flow      Residual
+ s -> 1     3               3           0  *
+ s -> 2     3               2           0
+ 1 -> 2     5               1           4  *
+ 1 -> t     2               2           0
+ 2 -> t     3               3           0  *
+
+ * no more augmented path -> algo terminates with max flow = 2+2+1 = 5
+ This is correct result
+ It is seen that this approach does not guarantee to produce the optimal solution
+
+================================================================================
+
+4. Ford-Fekurson algorithm
+- The idea is to extend the naive greedy algorithm by allowing “undo” operations.
+
+- For example, from the point where this algorithm gets stuck when it started with augmented path s-1-2-t,
+  we’d like to route 3 units backwards in the direction t-2-1-s, to form the residual network graph
+
+  Edge     Capacity        Flow      Residual
+  s -> 1     3               3           0  *
+  s -> 2     2               0           2
+  1 -> 2     5               3           2  *
+  1 -> t     2               0           2
+  2 -> t     3               3           0  *
+  --------------------------------------------
+  1 -> s                                 3  **
+  2 -> 1                                 3  **
+  t -> 2                                 3  **
+
+- in general, the residual capacity of backward edge is f(e) and forward edge is (c(e) - f(e))
+e.g. for forward edge 1->2, after setting f(e) = 3, its residual capacity = 5 - 3 = 2
+and  backward edge 2->1, its residual capacity = f(e) = 3
+
+- now we can apply the greedy approach in (3) to this residual network graph
+until no more augmented path is found from s-t
+
+5. Time complexity
+- Time complexity of Ford-Fulkerson algorithm is O(max_flow * E)
+(applicable for int-capacity flow)
+
+- We run a loop while there is an augmenting path.
+ An augmented path takes O(E) to search
+
+- In worst case, we may add 1 unit flow in every iteration.
+ Thus we run at most max_flow iterations
+
+- Therefore the time complexity becomes O(max_flow * E).
+
+- For example, consider the following graph
+
+       1
+100 /  |  \ 100
+  s    |1   t
+100 \  v  / 100
+       2
+
++ 1st iteration: augmented path = s-1-2-t, max flow is incremented by 1
++ 2nd iteration: augmented path = s-2-1-t, max flow is incremented by 1
++ 3rd iteration: augmented path = s-1-2-t, max flow is incremented by 1
++ 4th iteration: augmented path = s-2-1-t, max flow is incremented by 1
+...
+It will take 200 iterations to reach the max flow of 200
+(s-1 = 100, s-2 = 100)
+================================================================================
+
+https://brilliant.org/wiki/edmonds-karp-algorithm/
+6. Edmonds-Karp algorithm
+- use BFS to find next augmented path -> always pick a path with minimum number of edges
+- time complexity is O(V*E^2)
+---------------------------------------------------------------------------
+- statement 1:
+on each iteration of the algorithm, the shortest path between the source
+and all other vertices in the residual graph must increase monotonic.
+---------------------------------------------------------------------------
+- proof 1: by contradiction
+    * If statement 1 is not true, there must be some augmentation path P,
+    after which we can find a shorter augmentation path P'
+    Denote G as residual graph at iteration of P and G' as residual graph at iteration P'
+    Denote D(uv) as shortest distance between 2 node u,v in the residual graph at iteration of P
+           P(uv) as shortest path     between 2 node u,v in the residual graph at iteration of P
+           D'(uv) as shortest distance ...                      ....          ... iteration of P'
+           P'(uv)            path ...           ...             ..                iteration of P'
+
+    (distance here in terms of number of nodes on the path between them)
+    This means D(st) > D'(st) (*)
+
+    * This means there exists at least a node u on P(st)
+    (otherwise, s and t directly connected, shortest distance = 1, cannot be lower)
+     -> D(st) = D(su) + D(ut)
+
+    * After the augmentation path P, 1 or more edges E on P(st) has residual capacity drop to 0
+    The edges E not on P(st) wil remain their residual capacity
+    -> compared to G, G' has some forward edge removed (and maybe some reverse edge added)
+
+    - If at least 1 edge on P(su) become 0 -> to go from s-u,
+    we need to go through another path not P(su) that is also in G (if available)
+    because P(su) is shortest path in G -> D'(su) >= D(su)
+    (in worse case, s, u can become disconnected in G')
+    - If all edges on P(su) remain the same -> D'(su) = D(su)
+    Note that reverse edge does not help with lowering shortest distance from s-u
+    => D'(su) >= D(su)
+    - Similarly D'(ut) >= D(ut)
+
+    * There are 2 cases: 1. u also on the path of P'(st), 2. there is no node u on P(st) that is on P'(st)
+    * If node u also on the path of P'(st)
+    -> D'(st) = D'(su) + D'(ut) >= D(su) + D(ut) = D(st)
+    -> D'(st) >= D(st) -> contradicted with (*)
+
+    * If there is no node u on P(st) that is on P'(st)
+    -> P'(st) is not affected by augmented path P and it is actually also a path from s-t in G
+    Since P(st) is the shortest path from s-t in G,
+    D'(st) >= D(st) -> contradicted with (*)
+
+    => In conclusion, we have the shortest path length monotonically increasing over BFS iterations
+---------------------------------------------------------------------------
+- statement 2:
+total number of flow augmentations is O(V*E)
+---------------------------------------------------------------------------
+- proof 2:
+ * An edge is defined as critical on an augmenting path
+ if and only if the residual capacity of the edge equals the residual capacity of the path.
+ In other words, the critical edge's capacity will be filled by this augmenting path.
+
+ * Once we have augmented this path, the edge in question will disappear from the residual network.
+ We must show that each of the E edges can becomes critical at most V/2 times.
+
+ * Let u and v be vertices in the graph that are connected by an edge, and let s be the source.
+ When that edge is first critical, the distance relationship will be
+            D(s, v) = D(s, u) + 1 (1)
+
+ * Once this flow is augmented, as we have already seen, the edge (u, v) will disappear from the residual network.
+ This edge cannot reappear unless the flow from u to v is decreased,
+ which only happens if the edge (v, u) appears on an augmenting path.
+            D'(s, u) = D'(s, v) + 1 (2)
+
+ * Recalling from the statement D'(s, v) >= D(s, v)
+            (2) -> D'(s, u) >= D(s, v) + 1 = D(s, u) + 2
+
+  It is saying that between the time that (u, v) first became critical ((when flow was F)),
+  to when it next became critical ((when flow was F'), the distance between the source and u increased by at least 2.
+  The intermediate vertices on the shortest path from s to u cannot contain s, u or t,
+  so the distance to vertex u is at most (V−2)/2.
+  The denominator of that fraction is 2 because the distance from the source increases by at least 2 every time an edge becomes critical.
+  So, (u, v)(u,v) can become critical at most (V−2)/2 times, for a total of O(V) times.
+
+ Because there are O(E) total pairs of vertices (due to E edges) that can become critical O(V) times,
+ the total number of iterations that Edmonds-Karp can go through is O(V*E).
+ Each iteration takes O(E) for BFS -> Total time complexity = O(V*E^2)
+
+================================================================================
+
+7. Dinic algorithm
+- In Dinic’s algorithm, we use BFS to check if more flow is possible and to construct level graph.
+- In level graph, we assign levels to all nodes,
+level of a node is shortest distance (in terms of number of edges) of the node from source.
+In this graph, We only consider edges that connect a node of level i to i+1.
+- Once level graph is constructed, we send multiple flows using this level graph.
+Using DFS to search for flows from s-t, until no more paths can be found (blocking flow)
+This is the reason it works better than Edmond Karp.
+In Edmond Karp, we send only flow that is send across the path found by BFS.
+- These flows will contribute to the max flow
+- Repeat these steps, until no more path found from s-t in residual capacity graph
+
+- Time complexity: O(E*V^2).
+Doing a BFS to construct level graph takes O(E) time.
+Sending multiple more flows until a blocking flow is reached takes O(VE) time.
+The outer loop runs at-most O(V) time.
+In each iteration, we construct new level graph and find blocking flow.
+It can be proved that the number of levels increase at least by one in every iteration
+So the outer loop runs at most O(V) times.
+Therefore overall time complexity is O(E*V^2).

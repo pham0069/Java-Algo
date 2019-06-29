@@ -1,0 +1,250 @@
+https://www.hackerearth.com/practice/data-structures/advanced-data-structures/segment-trees/tutorial/
+
+1. Segment Tree is used when there are multiple range queries on array like
+- Finding the sum of all the elements in an array a[i..j]
+- Finding the minimum of all the elements in an array a[i..j]
+It also may support the update operation
+
+2. Naive approaches:
+
+- Directly find min (L, R) upon a query
+If there are m queries, the algo takes O(m*n)
+If m is big, this is not scalable
+
+- Maintain a matrix of size n*n wher m[i][j] store the min value of array ranged [i..j]
+This takes O(n^2) space and O(n^2) time to build the matrix
+
+3. What is segment tree?
+- It is a basically a binary tree used for storing the intervals or segments.
+- Each node in the Segment Tree represents an interval.
+- Consider an array A of size N and a corresponding Segment Tree T:
+
+a) The root of T will represent the whole array A[0:N-1].
+b) Each leaf in the Segment Tree T will represent a single element A[i] such that 0 <= i < N.
+c) The internal nodes in the Segment Tree  represents
+the union of elementary intervals A[i:j] where 0<= i < j < N
+
+4. Cost
+- space O(n)
+- build time O(n)
+- query time O(log n)
+- update time O(log n)
+
+5. How to build a segment tree?
+- For example, a = [-1, 3, 4, 1, 2, 0]
+- Split these into halves: [-1, 3, 4], [1, 2, 0]
+continue splitting until each segment has 1 or 2 elements
+[-1, 3, 4] -> [1, 3], [4]
+- Parent of 2 children is the minimum of 2 children
+
+[-1, 3]
+  -1
+  / \
+-1   3
+
+[-1, 3, 4]
+
+      -1
+    /   \
+  -1     \
+  / \     \
+-1   3     4
+
+- Building from bottom to get the whole tree
+
+                     -1[0,5]
+                   /          \
+                 -1[0,2]      0[3,5]
+                 /     \      /     \
+              -1[0,1]   \    1[3, 4] \
+              /    \     \   /   \    \
+             -1     3    4   1   2     0
+
+6. How to get query response?
+- Given an interval [i..j], how can we extract the min value of array in this index range?
+- There are 3 scenarios
+a. partial overlap
+[3, 4] is partial overlap with [0, 5]
+[3, 4] is partial overlap with [3, 5]
+b. no overlap
+[3, 4] is no overlap with [0, 1]
+c. total overlap
+[3, 4] is total overlap with [3, 4]
+
+- Query algorithm:
+ * start from root
+ * if the current range is no overlap with query range, no need to check child nodes
+ * if the current range is total overlap with query range, return the value in the node
+ * if the current range is partial overlap with query range, traverse down both child nodes
+
+- For example, get min value for range [2, 4]
+ * Use variable m to store the result
+ * Starting from root [0, 5] is partial overlap with [2, 4]
+ need to traverse both side
+     * on left side of [0, 5]: [0, 2] is partial overlap with [2, 4]
+     traverse on both side
+         * on left side of [0, 2]: [0, 1] is no overlap with [2, 4]
+         return a very big number like Integer.MIN as indicator that we dont account for this branch
+         * on right side of [0,2]: [2, 2] is total overlap with [2, 4]
+         return this node's value, i.e. 4 -> m = 4
+     * on right side of [0, 5]: [3, 5] is partial overlap with [2, 4]
+     traverse on both side
+         * on left side of [3, 5]: [3, 4] is total overlap with [2, 4]
+         return this node's value, i.e. 1 -> m = min (1, 4) = 1
+         * on right side of [3, 5]: [5, 5] is no overlap with [2, 4]
+         return immediately
+-> final result m = 1
+
+
+7. How to represent segment tree DS?
+- For example, array = {-1, 0, 3, 6}
+ * The tree looks like below (conceptually)
+            -1 (0)
+          /       \
+        -1(1)      3(2)
+        /  \      /   \
+      -1(3) 0(4) 3(5) 6(6)
+
+ * We number the nodes as shown in the bracket from 0 to 6
+ and thus can represent these nodes in an array
+ {-1, -1, 3, -1, 0, 3, 6}
+ This is the way how we store the tree physically
+
+- For example, array = {-1, 3, 4, 1, 2, 0}
+ The tree looks like below
+ Some leaf nodes (9, 10, 13, 14) are dummy
+                 -1 (0)
+          /                \
+        -1(1)              0(2)
+        /    \           /      \
+      -1(3)  4(4)       1(5)    0(6)
+      / \               /  \
+   -1(7)3(8)         1(11)2(12)
+
+
+- For a node indexed i, its children are indexed 2*i+1 and 2*i+2
+For example, node 0's children are 1 and 2
+node 1's children are 3 and 4...
+
+- If the array size is n, the tree size is (min power of 2 >= n) *2 -1
+For example
+    * n = 4, t = 4*2 -1 = 7
+    * n = 6, t = 8*2 -1 = 15
+
+8. Lazy propagation
+- Good optimization if we have frequent update range operation
+For example, increment array element from 1 to 3 by 1
+- We don't need to update all affected nodes immediately
+We can hold the update information in another place
+Only when needed (for example, when actually query the affected data),
+we will execute the update and at the same time get the correct result
+
+- We maintain another tree named lazy with same structure as segment tree
+Each lazy node stores the amount of delta that has not been propagated to the tree node
+
+- For example, array = {-1, 0, 3, 6}
+
+             -1 (0)                     0
+           /       \                  /   \
+         -1(1)      3(2)              0    0
+         /  \      /   \            /  \  /  \
+       -1(3) 0(4) 3(5) 6(6)         0   0 0  0
+
+           segment tree             lazy tree (initially all zeros)
+
+  * increment [1..3] by 2 -> no need to update segment tree, just update lazy tree
+           0
+          /  \
+         0    2
+        / \  / \
+        0 2  0 0
+
+     this indicates that node 4 and all nodes below node 2 have pending increment of 2
+
+  * decrement [0..2] by 1 -> update lazy tree (node 1 and node 5 by -1)
+           0
+          /  \
+        -1    2
+        / \  / \
+        0 2 -1  0
+
+
+  * increment [1..2] by 3 -> update lazy tree (node 4 and node 5 by 3)
+           0
+          /  \
+         -1   2
+        / \  / \
+        0  5 2  0
+
+- Example of actual propagation
+queryMin [0..2] -> need to apply the update in lazy tree if needed
+
+  * start from node 0 (0-3)
+  [0..3] partial overlap with [0..2]
+  lazy[0] = 0 -> no update on tree[0]
+  go both left and right
+  * go left to node 1(0-1)
+  lazy[1] = -1 -> update on tree[1] = -1 + (-1) = -2
+                  update lazy[1]'s children: lazy[3] = 0+ (-1) = -1
+                                             lazy[4] = 5 + (-1) = 4
+                  reset lazy[1] to 0
+
+           -1                0
+          /  \              /  \
+         -2   3            0    2
+        / \  / \          / \  / \
+       -1  0 3  6        -1  4 2  0
+
+  [0..1] total overlap with [0..2], just return tree[1] = -2
+  Note that we dont need to actually update the actual array element [0..1] here
+
+  * go right to node 3(2-3)
+  lazy[2] = 2 -> update on tree[2] = 3 + 2 = 5
+                 update lazy[2]'s children: lazy[5] = 2 + 2 = 4
+                                            lazy[6] = 0 + 2 = 2
+                 reset lazy[2] to 0
+           -1                0
+          /  \              /  \
+         -2   5            0    0
+        / \  / \          / \  / \
+       -1  0 3  6        -1  4 4  2
+  [2..3] partial overlap with [0..2], go both side
+
+  * go left to node 5(2-2)
+  lazy[5] = 4 -> update on tree[5] = 3 + 4 = 7
+                 5 has no children to propagate the delta
+                 reset lazy[5] to 0
+           -1                0
+          /  \              /  \
+         -2   5            0    0
+        / \  / \          / \  / \
+       -1  0 7  6        -1  4 0  2
+
+  * go right to node 6(3-3)
+  lazy[6] = 2 -> update on tree[6] = 6 + 2 = 8
+                 6 has no children to propagate the delta
+                 reset lazy[6] to 0
+           -1                0
+          /  \              /  \
+         -2   5            0    0
+        / \  / \          / \  / \
+       -1  0 7  8        -1  4 0 0
+
+  * after finish updating node 5 and 6, update their parent node 2
+  tree[2] = min (tree[5], tree[6])
+           -1                0
+          /  \              /  \
+         -2   7            0    0
+        / \  / \          / \  / \
+       -1  0 7  8        -1  4 0  0
+
+  * after finish updating node 1 and 2, update their parent node 0
+    tree[0] = min (tree[1], tree[2])
+           -2                0
+          /  \              /  \
+         -2   7            0    0
+        / \  / \          / \  / \
+       -1  0 7  8        -1  4 0  0
+
+
+9. Persistent segment tree

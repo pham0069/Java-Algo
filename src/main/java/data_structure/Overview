@@ -1,0 +1,60 @@
+Data structure is a particular way of organizing data in a computer so that it can be used effectively.
+The idea is to reduce the space and time complexities of different tasks.
+
+    1. Array: store homogeneous elements at contiguous locations
+Size of an array must be provided before storing data.
+
+    2. Linked list: consist of nodes where each node comprises data and a reference to the next node.
+There is no need to specify linked list's size before storing data.
+Types of linked list:
+ a) Singly linked list: every node points to the reference of next node and the last node points to NULL
+ b) Doubly linked list: every node maintains 2 references, one point to the next node, one point to the previous node.
+ The first node points to NULL as previous node. The last node points to NULL as next node
+ c) Circular linked list: all nodes are connected fo form a circle.
+ The last node points to the first node as next node
+
+    3. Stack: collection of LIFO elements with 2 operations:
+ push - add an element to the top of the stack
+ pop - remove the element at the top of the stack, i.e. the last element that was added
+
+    4. Queue: collection of FIFO elements with 2 operations:
+ enqueue - add an element to the end of the queue
+ dequeue - remove the element at the top of the queue, i.e. the first element that was added
+
+
+    5. Binary tree: each node stores the data and pointer to the left and right child nodes
+
+    6. Binary search tree: binary tree with additional properties:
+ - the left substree of a node  contains only nodes with key less than the node's key
+ - the right substree of a node  contains only nodes with key greater than the node's key
+ - the left and right subtree each must also be a binary search tree
+
+    7. Binary heap: binary tree with additional properties:
+ - all levels are completely filled, except possibly the last level
+ - min heap has key as the smallest element among all nodes
+ - max heap has key as the largest element among all nodes
+
+    8. Hash function: converts a big input key to small practical integer value.
+ A good hash function should have following properties
+ - efficiently computable
+ - should uniformly distribute the keys
+ Hash table: an array that stores pointers to records
+ The data is mapped to an integer value using hash function.
+ This integer is used as an index in hash table to store the data.
+
+    9. Graph: consist of two components:
+- A finite set of vertices also called as nodes.
+- A finite set of ordered pair of the form (u, v) called as edge.
+The pair is ordered because (u, v) is not same as (v, u) in case of directed graph(di-graph).
+The pair of form (u, v) indicates that there is an edge from vertex u to vertex v.
+The edges may contain weight/value/cost.
+
+    10. Trie (radix or prefix tree): can search words with complexity = words' length and allow searching for prefix
+
+Number of Vertices is denoted as V. Number of Edges is denoted as E.
+
+    11. Segment tree: allow many queries like minimum, maximum, sum, .. etc on a input range of given set.
+    Queries also involve update of values in given set
+
+    12. Suffix tree: search a pattern in a text
+

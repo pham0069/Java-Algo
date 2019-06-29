@@ -1,0 +1,22 @@
+SOLID
+encourage maintainable, understandable, easy-to-extend application
+
+1. Single responsibility
+Each class should have single responsibility
+This benefits:
+    - Testing: fewer test case
+    - Lower coupling: less functions, less dependencies
+    - Organization: small, well-organized, easy to search
+
+2. Open for extend, Closed for modification
+Stop ourselves from modifying existing code and causing potential new bugs in otherwise happy app
+
+3. Liskov substitution
+If class A is subtype of class B, we should be able to replace B with A without disrupting the behavior of our program
+
+4. Interface segregation
+Larger interfaces should be split into smaller ones.
+Implementing classes only need to be concerned about the methods that are of interest to them.
+
+5. Dependency Inversion
+Instead of high-level modules depending on low-level modules, both will depend on abstractions

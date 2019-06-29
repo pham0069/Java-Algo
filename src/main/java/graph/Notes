@@ -1,0 +1,64 @@
+I/ Definition
+A Graph is a non-linear data structure consisting of:
+1. Nodes: or vertices
+2. Edges: or lines or arcs, that connect any two nodes in the graph.
+
+More formally a Graph can be defined as finite set of vertices(or nodes) and set of Edges which connect a pair of nodes.
+
+II/ Presentation
+https://www.geeksforgeeks.org/graph-and-its-representations/
+
+2 most common representations are adjacency matrix and adjacency list
+There are other representations also like, Incidence Matrix and Incidence List. The choice of the graph representation
+is situation specific. It totally depends on the type of operations to be performed and ease of use.
+
+1) Adjacency Matrix:
+Adjacency Matrix is a 2D array of size V x V where V is the number of vertices in a graph. Let the 2D array be adj[][],
+a slot adj[i][j] = 1 indicates that there is an edge from vertex i to vertex j. Adjacency matrix for undirected graph
+is always symmetric. Adjacency Matrix is also used to represent weighted graphs. If adj[i][j] = w, then there is an edge
+from vertex i to vertex j with weight w.
+* Pros:
+- easy to implement and follow
+- removing edge takes O(1) time
+- query to test if u, v are connected takes O(1) time
+* Cons:
+- space complexity of O(V*V), even if the graph is sparse
+- adding a vertex takes O(V*V) time
+
+2) Adjacency List:
+An array of lists is used. Size of the array is equal to the number of vertices. Let the array be array[]. An entry
+array[i] represents the list of vertices adjacent to the ith vertex. This representation can also be used to represent
+a weighted graph. The weights of edges can be represented as lists of pairs. Following is adjacency list representation
+of the above graph.
+* Pros:
+- space complexity is O(|V| + |E|)
+- adding vertex is easy
+* Cons:
+- query to test if u, v are connected taks O(V) time
+
+III/ BFS
+1) Overview
+Breadth First Traversal (or Search) for a graph is similar to Breadth First Traversal of a tree. The only catch here is,
+unlike trees, graphs may contain cycles, so we may come to the same node again. To avoid processing a node more than
+once, we use a boolean visited array. For simplicity, it is assumed that all vertices are reachable from the starting vertex.
+Time complexity is O(V+E)
+
+2) Application
+
+IV/ DFS
+1) Overview
+Depth First Traversal (or Search) for a graph is similar to Depth First Traversal of a tree. The only catch here is,
+unlike trees, graphs may contain cycles, so we may come to the same node again. To avoid processing a node more than
+once, we use a boolean visited array. Time Complexity: O(V+E)
+2) Application
+https://www.geeksforgeeks.org/applications-of-depth-first-search/
+
+* Find minimum spanning tree and all pair shortest path tree for unweighted graph
+* Detect cycle in a graph
+* Path finding
+* Topological sorting: mainly used for scheduling jobs from given dependencies among jobs
+For example, instruction scheduling, ordering of formula cell evaluation in spreadsheets, logic synthesis, determining
+the order of compilation tasks to perform in makefiles, data serialization, resolve symbol dependencies in linkers
+* Test if a graph is bipartite
+* Find strongly connected components of a graph
+* Solve puzzles with only one solution, such as mazes
