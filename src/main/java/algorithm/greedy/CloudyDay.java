@@ -1,15 +1,20 @@
 package algorithm.greedy;
 
+import data_structure.advanced.implementation.SegmentTreeLazyPropagation;
+
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -76,7 +81,7 @@ import java.util.Set;
  * the map of towns and covered clouds. First we sort towns by location. Then for each cloud, we can quickly get the
  * first town and last town in the range of the cloud by binary search. Then we traverse the town, trying to remove a
  * cloud satisfying (*). Note that when we hit such a town (whose covered cloud could be removed for sunny), we can
- * get the additional sunny population by getting all towns the get sunny when the cloud is removed. After this, we
+ * get the additional sunny population by getting all towns that get sunny when the cloud is removed. After this, we
  * can jump to the town next to the last town in the removal candidate cloud, instead of moving to the the town next
  * to the first town in the removal candidate cloud. In this way, the cost of traversing is O(n).
  * The cost of sorting is O(nlogn). The cost of mapping is O(mlogn). Total cost is O((m+n)logn)
@@ -85,8 +90,7 @@ import java.util.Set;
 public class CloudyDay {
     public static void main(String[] args) throws IOException {
         //BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
-        //BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(CloudyDay.class.getResource("cloudyDay.txt").openStream()));
-        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(CloudyDay.class.getResourceAsStream("cloudyDay.txt")));
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(CloudyDay.class.getResourceAsStream("cloudyDay9.txt")));
 
         //read towns and clouds
         int n = Integer.parseInt(bufferedReader.readLine());
@@ -115,12 +119,19 @@ public class CloudyDay {
         getMaxSunnyPopulation(n, town, m, cloudLocation, cloudRange);
     }
 
+    /**
+     * Fail test 27 (timeout)
+     * Tried to keep track of no-cloud towns and single-cloud towns (to avoid traversing list of towns again later)
+     * - but more timeout test
+     *
+     *
+     */
     static void getMaxSunnyPopulation(int n, Town[] town, int m, int[] cloudLocation, int[] cloudRange) {
         //sort towns
         Arrays.sort(town, Comparator.comparingInt(Town::getLocation));
 
         /**
-         * Since we dont care about towns that are covered by more than 2 clouds, we dont need to actually store all the
+         * Since we dont care about towns that are covered by >= 2 clouds, we dont need to actually store all the
          * clouds covering a town. In case of very large n and m, that is time-consuming and space-occupying.
          * Used to store coveringCloudForTown as Set[], it causes StackOverflow and timeout exception
          * For simplicity, we can assign the singleCoveringCloudForTown value as follows:
@@ -128,11 +139,6 @@ public class CloudyDay {
          * singleCoveringCloudForTown[j] = i >= 0 -> town j is covered by single cloud i
          * singleCoveringCloudForTown[j] = -1 -> town j is covered by more than a cloud
          */
-        /**
-         * TODO how to improve performance as testcase 27 still fails dues to out of time
-         * how about keeping track of no-cloud towns and single-cloud towns, to avoid traversing list of towns again later
-         */
-
         Integer[] singleCoveringCloudForTown = new Integer[n];
         int[] startTownForCloud = new int[m];
         int[] endTownForCloud = new int[m];
@@ -148,6 +154,7 @@ public class CloudyDay {
             if (higherTown == -1) {
                 continue;
             }
+            //maybe we can improve here?
             for (int j = lowerTown; j <= higherTown; j++) {
                 if (singleCoveringCloudForTown[j] == null) {
                     singleCoveringCloudForTown[j] = i;
@@ -184,19 +191,19 @@ public class CloudyDay {
         System.out.println(existingSunnyPopulation + maxAdditionalSunnyPopulation);
     }
 
-
+    /**
+     * Improve getMaxSunnyPopulation
+     * by getting singleCoverCloud by binary search to avoid looping same city multiple times in the cloud location computation
+     * Fail even more test for timeout :(
+     * But test 27 passes
+     */
     static void getMaxSunnyPopulation2(int n, Town[] town, int m, int[] cloudLocation, int[] cloudRange) {
         //sort towns
         Arrays.sort(town, Comparator.comparingInt(Town::getLocation));
 
-        int[] startTownForCloud = new int[m];
-        int[] endTownForCloud = new int[m];
-        Set<Integer> sunnyTown = new HashSet<>(n);
-        Set<Integer> vistedTown = new HashSet<>(n);
-        Map<Integer, Integer> singleCloudTown = new HashMap<>(n);
-        for (int i = 0; i < n; i++) {
-            sunnyTown.add(i);
-        }
+        List<Cloud> sortedByStartTown = new ArrayList<>();
+        List<Cloud> sortedByEndTown = new ArrayList<>();
+
         for (int i = 0; i < m; i++) {
             int startOfCloud = cloudLocation[i]-cloudRange[i];
             int lowerTown = binarySearchGreaterOrEqualToKey(town, startOfCloud);
@@ -208,36 +215,76 @@ public class CloudyDay {
             if (higherTown == -1) {
                 continue;
             }
-            for (int j = lowerTown; j <= higherTown; j++) {
-                sunnyTown.remove(j);
-                if (!vistedTown.contains(j)) {
-                    singleCloudTown.put(j, i);
-                } else {
-                    singleCloudTown.remove(j);
-                }
-                vistedTown.add(j);
+
+            // this means no town within this cloud
+            if (higherTown < lowerTown) {
+                continue;
             }
-            startTownForCloud[i] = lowerTown;
-            endTownForCloud[i] = higherTown;
+
+            // ignore the clouds that are not covering any cloud
+            Cloud cloud = new Cloud(lowerTown, higherTown);
+            sortedByStartTown.add(cloud);
+            sortedByEndTown.add(cloud);
         }
 
+        // we will get the singleCoveringTown based on sortedByStartTown by using right cloud -1
+        // so we need to sort it by start town first, if they tie, use end town to break
+        Collections.sort(sortedByStartTown, Comparator.comparing(Cloud::getStartTownIndex).thenComparing(Cloud::getEndTownIndex));
+        Collections.sort(sortedByEndTown, Comparator.comparing(Cloud::getEndTownIndex));
+
+
         long existingSunnyPopulation = 0;
-        for (int i : sunnyTown) {
-            existingSunnyPopulation += town[i].population;
-        }
         long maxAdditionalSunnyPopulation = 0;
-        for (Map.Entry<Integer, Integer> entry : singleCloudTown.entrySet()) {
-            int t = entry.getKey();
-            int cloudToRemove = entry.getValue();
-            long additionalSunnyPopulation = 0;
-            for (int j = startTownForCloud[cloudToRemove]; j <= endTownForCloud[cloudToRemove]; j++) {
-                if (singleCloudTown.containsKey(j))
-                    additionalSunnyPopulation += town[j].population;
+        /**
+         * Traverse the towns to find the cloud that can be removed to increase the additional sunny population
+         */
+        for (int i = 0; i < n; i++) {
+            Cloud cloud = getSingleCoveringCloud(sortedByStartTown, sortedByEndTown, i);
+            if (cloud == NONE_COVERING_CLOUD) {
+                existingSunnyPopulation += town[i].population;
+            } else if (cloud != MULTI_COVERING_CLOUD) {
+                long additionalSunnyPopulation = 0;
+                for (int j = cloud.startTownIndex; j <= cloud.endTownIndex; j++) {
+                    if (isCoveredBySingleCloud(sortedByStartTown, sortedByEndTown, j)) {
+                        additionalSunnyPopulation += town[j].population;
+                    }
+                }
+                maxAdditionalSunnyPopulation = Math.max(maxAdditionalSunnyPopulation, additionalSunnyPopulation);
+                //jump to the last town, so in next loop, we will check the next town after this
+                i = cloud.endTownIndex;
             }
-            maxAdditionalSunnyPopulation = Math.max(maxAdditionalSunnyPopulation, additionalSunnyPopulation);
         }
 
         System.out.println(existingSunnyPopulation + maxAdditionalSunnyPopulation);
+    }
+
+    static final Cloud NONE_COVERING_CLOUD = new Cloud(-1, -1);
+    static final Cloud MULTI_COVERING_CLOUD = new Cloud(-1, -1);
+
+    static boolean isCoveredBySingleCloud(List<Cloud> sortedByStartTown, List<Cloud> sortedByEndTown, int location) {
+        Cloud cloud = getSingleCoveringCloud(sortedByStartTown, sortedByEndTown, location);
+        return cloud != NONE_COVERING_CLOUD && cloud != MULTI_COVERING_CLOUD;
+    }
+    static Cloud getSingleCoveringCloud(List<Cloud> sortedByStartTown, List<Cloud> sortedByEndTown, int location) {
+        int numClouds = sortedByStartTown.size();
+        int rightCloud = binarySearchStrictlyGreaterThanKey(sortedByStartTown, location);
+        int numberOfRightClouds = rightCloud == -1 ? 0 : (numClouds-rightCloud); // rightCLoud..numClouds-1
+        int leftCloud = binarySearchStrictlyLessThanKey(sortedByEndTown, location);
+        int numberOfLeftClouds = leftCloud == -1 ? 0 : (leftCloud+1);  // 0..leftCloud
+
+        int numberOfCoveringClouds = numClouds - (numberOfLeftClouds + numberOfRightClouds);
+        if (numberOfCoveringClouds == 0) {
+            return NONE_COVERING_CLOUD;
+        } else if (numberOfCoveringClouds > 1) {
+            return MULTI_COVERING_CLOUD;
+        } else {
+            if (rightCloud == -1) {
+                return sortedByStartTown.get(numClouds-1);
+            } else {
+                return sortedByStartTown.get(rightCloud-1);
+            }
+        }
+
     }
 
     static int binarySearchGreaterOrEqualToKey(Town[] array, int key) {
@@ -311,11 +358,111 @@ public class CloudyDay {
         return foundIndex;
     }
 
-    static class Town{
+    static class Town {
         int location;
         int population;
         int getLocation() {
             return location;
+        }
+    }
+
+    static int binarySearchStrictlyGreaterThanKey(List<Cloud> array, int key) {
+        if (array.isEmpty()) {
+            return -1;
+        }
+        return binarySearchStartTownStrictlyGreaterThanKey(array, 0, array.size()-1, key);
+    }
+
+    static int binarySearchStrictlyLessThanKey(List<Cloud> array, int key) {
+        if (array.isEmpty()) {
+            return -1;
+        }
+        return binarySearchEndTownStrictlyLessThanKey(array, 0, array.size()-1, key);
+    }
+
+    /**
+     * Find the smallest index such that element larger or equal to the key
+     * The index is in the inclusive range from start to end
+     * Return -1 if no such index is found
+     * @param array
+     * @param start
+     * @param end
+     * @param key
+     * @return
+     */
+    static int binarySearchStartTownStrictlyGreaterThanKey(List<Cloud> array, int start, int end, int key) {
+        int low = start, high = end, mid =(low+high)/2;
+        if (array.get(high).startTownIndex <= key) ////// mod
+            return -1;
+        int foundIndex = -1;
+        while (low <= high) {
+            if (array.get(mid).startTownIndex == key) {
+                //to ensure returning max index satisfying the condition
+                foundIndex = mid;
+                break;
+            } else if (array.get(mid).startTownIndex < key) {
+                low = mid+1;
+            } else {
+                high = mid-1;
+            }
+            mid = (low+high)/2;
+        }
+
+        //// mod from here
+        if (foundIndex == -1) {
+            return low;
+        }
+
+        //find the largest index with value = key
+        while (foundIndex < end && array.get(foundIndex + 1).startTownIndex == key) {
+            foundIndex++;
+        }
+        return foundIndex+1;
+    }
+
+    static int binarySearchEndTownStrictlyLessThanKey(List<Cloud> array, int start, int end, int key) {
+        int low = start, high = end, mid =(low+high)/2;
+        if (array.get(low).endTownIndex >= key) //////
+            return -1;
+        int foundIndex = -1;
+        while (low <= high) {
+            if (array.get(mid).endTownIndex == key) {
+                //to ensure returning max index satisfying the condition
+                foundIndex = mid;
+                break;
+            }
+            else if (array.get(mid).endTownIndex < key) {
+                low = mid+1;
+            } else {
+                high = mid-1;
+            }
+            mid = (low+high)/2;
+        }
+
+        //// mod from here
+        if (foundIndex == -1) {
+            return high;
+        }
+
+        //find the smallest index with value = key
+        while (foundIndex > start && array.get(foundIndex - 1).endTownIndex == key) {
+            foundIndex--;
+        }
+        return foundIndex-1;
+    }
+
+    static class Cloud {
+        int startTownIndex;
+        int endTownIndex;
+        Cloud(int startTownIndex, int endTownIndex) {
+            this.startTownIndex = startTownIndex;
+            this.endTownIndex = endTownIndex;
+        }
+        int getStartTownIndex() {
+            return startTownIndex;
+        }
+        int getEndTownIndex() {
+            return endTownIndex;
         }
     }
 }

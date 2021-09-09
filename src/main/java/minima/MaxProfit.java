@@ -11,8 +11,8 @@ package minima;
  */
 public class MaxProfit {
     public static void main(String[] args){
-        double[] prices = {6, 4, 2, 7, 5, 1, 8, 15, 20, 2, 5, 8, 12, 13, 17, 11};
-        //double[] prices = {1.0, 1.0, 0.9, 0.8, 0.8, 1.2, 1.8, 1.8, 0.5, 1.2, 1.4, 10};
+        //double[] prices = {6, 4, 2, 7, 5, 1, 8, 15, 20, 2, 5, 8, 12, 13, 17, 11};
+        double[] prices = {5, 10, 30, 16, 2, 15, 25, 3, 40};
         System.out.println(getSingleTradeMaxProfit_YuZhen(prices));
         System.out.println(getSingleTradeMaxProfit_Quan(prices));
         System.out.println(getAtMostTwoTradesMaxProfit(prices));

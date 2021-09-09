@@ -12,4 +12,5 @@ public class UndirectedGraph<T, W> extends WeightedGraphImpl<T, W> {
         addAdjacency(new Edge<>(v1, v2, w));
         addAdjacency(new Edge<>(v2, v1, w));
     }
+
 }

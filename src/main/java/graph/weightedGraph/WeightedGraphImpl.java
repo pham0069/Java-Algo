@@ -10,6 +10,9 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 public abstract class WeightedGraphImpl<T, W> {
+    public static void main(String[] args) {
+
+    }
     @Getter
     private List<Vertex<T>> vertices = new ArrayList<>();
     private Map<T, List<Edge<T, W>>> adjacency = new HashMap<>();

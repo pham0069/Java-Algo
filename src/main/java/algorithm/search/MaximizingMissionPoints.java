@@ -1,11 +1,9 @@
 package algorithm.search;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Scanner;
+import java.util.TreeSet;
 
 /**
  * https://www.hackerrank.com/challenges/maximizing-mission-points/problem
@@ -39,20 +37,128 @@ import java.util.Scanner;
  * O(n^2) -> timeout
  *
  * 2. KD tree, Oct tree, Quad tree ?
+ * Only search for prev cities that are in interested neighborhood
+ * Can use grid
+ *
+ * 3. Editorial
+ * Basic Idea (divide and conquer):
+ * dp(i) = best score I can obtain when my subsequence has ith point as the last one.
+ *
+ * a) Solve for the left half. After this step dp(i) for all i in the left half is complete.
+ * b) Merge the subproblems.
+ * What this means is that we calculate dp(i) for all i in the right half,
+ * assuming that the previous adjacent point (if any) was necessarily from the left half.
+ * After this step, dp(i) for all i in right half is only partially complete.
+ * (We are yet to process the cases when i is in right half and so is the previous point)
+ * c) Solve for the right half. Now dp(i) is calculated for the whole range
+ *
+ * How to do step 2 (merging) ?
+ * - Sort the points (in left and right) by their x co-ordinates,
+ * and iterate over the points in the right half in increasing order.
+ *
+ * - For a point in the right half:
+ * Remove all points in left half which are at a distance greater than d1 behind it,
+ * and add all points in the right half which are at a distance less than or equal to d1 ahead of it.
+ * In other words, only points (of the left half) which are within absolute distance (x - coordinate only) X of this point (of the right half), are "active".
+ * Among all active points, query the one which has y - coordinate within d2 , and has maximum value.
+ *
+ * - For a point in the left half: maintain a segment tree which supports point updates and range max queries:
+ * i = longitude
+ * To add it, set Y[i] = DP[i]
+ * To remove it, set Y[i] = -infinity
  */
 public class MaximizingMissionPoints {
-    static class City {
+    static class City implements Comparable<City> {
         int latitude;
         int longitude;
         int height;
         int points;
+        long bestScore;
 
         City(int latitude, int longitude, int height, int points) {
             this.latitude = latitude;
             this.longitude = longitude;
             this.height = height;
             this.points = points;
+            this.bestScore = points;
         }
+
+        public int compareTo (City that) {
+            if (that.bestScore > bestScore) {
+                return 1;
+            } else {
+                return -1; // Never return 0 because we don't want cities to compare equal
+            }
+        }
+    }
+
+    //=============================================================================
+    /**
+     * Divide the whole map into grids of size d1*d2
+     * Given a city's location, those cities within d1-diff in latitude and d2-diff in longitude
+     * must be in same grid or +/- 1 from this city's grid
+     * We can store the maxPoints achievable of a trip ended at each city in the grid containing the city
+     * in the descending order
+     * For each city, we dont have to search the whole range from first city to the city previous to this city
+     * for the best score. We only need to search those in neighborhood area
+     */
+
+    static long maxPoints(City[] cities, int d1, int d2, int minLat, int maxLat, int minLon, int maxLon) {
+        return new CityScorer(cities, d1, d2, minLat, maxLat, minLon, maxLon).bestScore();
+    }
+    static class CityScorer {
+        class CitySet extends TreeSet<City> {}
+        CitySet[][] grid;
+        static final int GRID_MAX = 1000; // Grid size cannot exceed 1000 x 1000
+
+        CityScorer(City[] cities, int d1, int d2, int minLat, int maxLat, int minLon, int maxLon) {
+            // sort cities in height order
+            Comparator<City> heightComp = Comparator.comparing((City c) -> c.height);
+            Arrays.sort(cities, heightComp);
+
+            // if number of grid is small, better no grid division
+            int gridX = Math.min( GRID_MAX, (maxLon-minLon+d2)/d2 );
+            if (gridX <= 5) gridX = 1;
+            int gridY = Math.min( GRID_MAX, (maxLat-minLat+d1)/d1 );
+            if (gridY <= 5) gridY = 1;
+
+            grid = new CitySet[gridY][gridX];
+            int rectWidth = (maxLon-minLon+gridX)/gridX;
+            int rectHeight = (maxLat-minLat+gridY)/gridY;
+
+            for (City c : cities) {
+                // Prepare to find the city within the grid; must search +- 1 square in each direction
+                int x = (c.longitude-minLon)/rectWidth;
+                int y = (c.latitude-minLat)/rectHeight;
+                int xBegin = Math.max(x-1, 0);
+                int xEnd = Math.min(x+1, gridX-1);
+                int yBegin = Math.max(y-1,0);
+                int yEnd = Math.min(y+1, gridY-1);
+                long best = 0;
+                for (int i=yBegin; i <= yEnd; ++i) {
+                    for (int j = xBegin; j <= xEnd; ++j) {
+                        if (grid[i][j] == null) continue;
+                        for (City d : grid[i][j]) { // Find highest scoring city in the grid square
+                            if (Math.abs(c.latitude - d.latitude) <= d1 && Math.abs(c.longitude - d.longitude) <= d2) {
+                                best = Math.max(best, d.bestScore);
+                                break;
+                            }
+                        }
+                    }
+                }
+                // At this point bestScore is the highest value in adjacent grid squares
+                c.bestScore += best;
+                if (c.bestScore > bestScore) bestScore = c.bestScore;
+
+                // Add the city to grid[y][x]
+                if (grid[y][x] == null) {
+                    grid[y][x] = new CitySet();
+                }
+                grid[y][x].add(c);
+            }
+        }
+        private long bestScore = 0;
+        public long bestScore() { return bestScore; }
     }
 
     //=============================================================================
@@ -73,13 +179,15 @@ public class MaximizingMissionPoints {
         }
     }
 
+    //index = city longitude, value = best score of that city
     static class SegmentTree {
+        int MAX_LEN = 400_000; // max longitude + max d2
         int len;
-        int[] tree;
+        long[] tree;
 
-        SegmentTree(int len) {
-            this.len = len;
-            this.tree = new int[getTreeSize(len)];
+        SegmentTree() {
+            this.len = MAX_LEN;
+            this.tree = new long[getTreeSize(len)];
             for (int i = 0; i < tree.length; i++) {
                 tree[i] = Integer.MIN_VALUE;
             }
@@ -90,11 +198,11 @@ public class MaximizingMissionPoints {
             return 2 * (int) Math.pow(2, m) - 1;
         }
 
-        private int query(int start, int end) {
+        private long query(int start, int end) {
             return query(start, end, 0, len - 1, 0);
         }
 
-        private int query(int start, int end, int low, int high, int root) {
+        private long query(int start, int end, int low, int high, int root) {
             // note that if low == high, only 2 cases: no overlap or total overlap
 
             // no overlap
@@ -109,16 +217,16 @@ public class MaximizingMissionPoints {
 
             // partial overlap
             int mid = (low + high) / 2;
-            int left = query(start, end, low, mid, root * 2 + 1);
-            int right = query(start, end, mid + 1, high, root * 2 + 2);
+            long left = query(start, end, low, mid, root * 2 + 1);
+            long right = query(start, end, mid + 1, high, root * 2 + 2);
             return Math.max(left, right);
         }
 
-        private void update(int index, int newVal) {
+        private void update(int index, long newVal) {
             update(index, newVal, 0, len - 1, 0);
         }
 
-        private void update(int index, int newVal, int low, int high, int root) {
+        private void update(int index, long newVal, int low, int high, int root) {
             // index not in this range -> no update
             if (index < low || index > high) {
                 return;
@@ -142,55 +250,58 @@ public class MaximizingMissionPoints {
         }
     }
 
-    static void merge(int low, int high, int[]mp, City[] cities, SegmentTree tree, int d1, int d2) {
+    static void merge(int low, int high, long[]mp, City[] cities, SegmentTree tree, int d1, int d2) {
         int mid = (low + high) / 2;
 
+        // sort left cities in increasing latitude order
         Pair[] left = new Pair[mid-low+1];
-        Pair[] right = new Pair[high-mid];
         for (int i = low; i <= mid; ++i) {
             left[i-low] = new Pair(cities[i].latitude, i);
         }
+        Arrays.sort(left);
 
+        // sort right cities in increasing latitude order
+        Pair[] right = new Pair[high-mid];
         for (int i = mid + 1; i <= high; ++i) {
             right[i-mid-1] = new Pair(cities[i].latitude, i);
         }
-
-        Arrays.sort(left);
         Arrays.sort(right);
 
-        int left_l = 0;
-        int left_r = -1;
+        int indexLowerBound = 0;
+        int indexUpperBound = -1;
         // for a point in the right half, find a point in the left half
         // such that its difference in latitude and longitude <= d1 and d2 respectively
         for (Pair pair : right) {
-            int i = pair.second;
-            int x = pair.first;
+            int index = pair.second;
+            int latitude = pair.first;
 
-            while (left_r + 1 < left.length && left[left_r + 1].first - x <= d1) {
-                ++left_r;
-                int who = left[left_r].second;
+
+            while (indexUpperBound + 1 < left.length && left[indexUpperBound + 1].first - latitude <= d1) {
+                ++indexUpperBound;
+                int who = left[indexUpperBound].second;
                 tree.update(cities[who].longitude, mp[who]);
             }
 
-            while (left_l < left.length && x - left[left_l].first > d1) {
-                int who = left[left_l].second;
-                tree.update(cities[who].longitude, Integer.MIN_VALUE);
-                ++left_l;
+            while (indexLowerBound < left.length && latitude - left[indexLowerBound].first > d1) {
+                int who = left[indexLowerBound].second;
+                tree.update(cities[who].longitude, Long.MIN_VALUE);
+                ++indexLowerBound;
             }
 
-            int yLow = Math.max(1, cities[i].longitude - d2);
-            int yHigh = Math.min(Integer.MAX_VALUE, cities[i].longitude + d2);
-            mp[i] = Math.max(mp[i], cities[i].points + tree.query(yLow, yHigh));
+            int longitudeLowerBound = Math.max(1, cities[index].longitude - d2);
+            int longitudeUpperBound = Math.min(Integer.MAX_VALUE, cities[index].longitude + d2);
+            mp[index] = Math.max(mp[index], cities[index].points + tree.query(longitudeLowerBound, longitudeUpperBound));
         }
 
-        while (left_l <= left_r) {
-            int who = left[left_l].second;
-            tree.update(cities[who].longitude, Integer.MIN_VALUE);
-            ++left_l;
+        // reset tree before next merge
+        while (indexLowerBound <= indexUpperBound) {
+            int who = left[indexLowerBound].second;
+            tree.update(cities[who].longitude, Long.MIN_VALUE);
+            ++indexLowerBound;
         }
     }
 
-    static void solve(int low, int high, int[]mp, City[] cities, SegmentTree tree, int d1, int d2) {
+    static void solve(int low, int high, long[]mp, City[] cities, SegmentTree tree, int d1, int d2) {
         if (low == high) {
             mp[low] = Math.max(mp[low], cities[low].points);
             return;
@@ -201,27 +312,20 @@ public class MaximizingMissionPoints {
         solve(mid + 1, high, mp, cities, tree, d1, d2);
     }
 
-    static int maxPoints(int d1, int d2, City[] cities) {
+    static long maxPoints3(int d1, int d2, City[] cities) {
         Comparator<City> heightComp = Comparator.comparing((City c) -> c.height);
         Arrays.sort(cities, heightComp);
 
-        SegmentTree tree = new SegmentTree(cities.length);
-        int mp[] = new int[cities.length];
+        SegmentTree tree = new SegmentTree();
+        long mp[] = new long[cities.length];
         solve(0, cities.length-1, mp, cities, tree, d1, d2);
 
-
-        int maxPoints = Integer.MIN_VALUE;
-        for (int i = 0; i < mp.length; i++) {
-            maxPoints = Math.max(maxPoints, mp[i]);
-        }
-
-        return maxPoints;
+        return Arrays.stream(mp).max().orElse(0);
     }
 
-
     //=============================================================================
-
     // O(n^2) timeout overflow
+    // simply brute-force search for previous cities for best score
     static int maxPoints2(int d1, int d2, City[] cities) {
         Comparator<City> heightComp = Comparator.comparing((City c) -> c.height);
         Arrays.sort(cities, heightComp);
@@ -269,6 +373,9 @@ public class MaximizingMissionPoints {
 
         City[] cities = new City[n];
 
+        int minLatitude = Integer.MAX_VALUE, minLongitude = Integer.MAX_VALUE;
+        int maxLatitude = Integer.MIN_VALUE, maxLongitude = Integer.MIN_VALUE;
+
         for (int nItr = 0; nItr < n; nItr++) {
             String[] latitudeLongitude = scanner.nextLine().split(" ");
 
@@ -281,9 +388,16 @@ public class MaximizingMissionPoints {
             int points = Integer.parseInt(latitudeLongitude[3]);
 
             cities[nItr] = new City(latitude, longitude, height, points);
+
+            minLatitude = Math.min(minLatitude, latitude);
+            minLongitude = Math.min(minLongitude, longitude);
+            maxLatitude = Math.max(maxLatitude, latitude);
+            maxLongitude = Math.max(maxLongitude, longitude);
+
         }
 
-        System.out.println(maxPoints(d1, d2, cities));
+        System.out.println(maxPoints3(d1, d2, cities));
+        //System.out.println(maxPoints(cities, d1, d2, minLatitude, maxLatitude, minLongitude, maxLongitude));
 
         scanner.close();
     }
