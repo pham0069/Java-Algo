@@ -16,7 +16,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * https://www.hackerrank.com/challenges/cloudy-day/problem
@@ -90,7 +93,7 @@ import java.util.Set;
 public class CloudyDay {
     public static void main(String[] args) throws IOException {
         //BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
-        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(CloudyDay.class.getResourceAsStream("cloudyDay9.txt")));
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(CloudyDay.class.getResourceAsStream("cloudyDay.txt")));
 
         //read towns and clouds
         int n = Integer.parseInt(bufferedReader.readLine());
@@ -116,7 +119,7 @@ public class CloudyDay {
             cloudRange[i] = Integer.parseInt(split[i]);
         }
 
-        getMaxSunnyPopulation(n, town, m, cloudLocation, cloudRange);
+        getMaxSunnyPopulation4(n, town, m, cloudLocation, cloudRange);
     }
 
     /**
@@ -464,5 +467,115 @@ public class CloudyDay {
         int getEndTownIndex() {
             return endTownIndex;
         }
+    }
+
+    /*
+     * 2 test cases fail due to timeout :(((
+     *
+     */
+    static void getMaxSunnyPopulation3(int n, Town[] town, int m, int[] cloudLocation, int[] cloudRange) {
+        //sort towns
+        Arrays.sort(town, Comparator.comparingInt(Town::getLocation));
+
+        Integer[] singleCoveringCloudForTown = new Integer[n];
+        int[] startTownForCloud = new int[m];
+        int[] endTownForCloud = new int[m];
+
+        Map<Integer, Long> singleCoveringCloudToAccumulatedPopulations = new HashMap<>();
+        long maxAdditionalSunnyPopulation = 0;
+
+        for (int i = 0; i < m; i++) {
+            int startOfCloud = cloudLocation[i]-cloudRange[i];
+            int lowerTown = binarySearchGreaterOrEqualToKey(town, startOfCloud);
+            if (lowerTown == -1) {
+                continue;
+            }
+            int endOfCloud = cloudLocation[i]+cloudRange[i];
+            int higherTown = binarySearchLessOrEqualToKey(town, endOfCloud);
+            if (higherTown == -1) {
+                continue;
+            }
+
+            for (int j = lowerTown; j <= higherTown; j++) {
+                if (singleCoveringCloudForTown[j] == null) {
+                    singleCoveringCloudForTown[j] = i;
+                    long currentAccumulation = Optional.ofNullable(singleCoveringCloudToAccumulatedPopulations.get(i)).orElse(0L);
+                    singleCoveringCloudToAccumulatedPopulations.put(i, currentAccumulation + town[j].population);
+                    maxAdditionalSunnyPopulation = Math.max(maxAdditionalSunnyPopulation, singleCoveringCloudToAccumulatedPopulations.get(i));
+                } else if (singleCoveringCloudForTown[j] >= 0) {
+                    singleCoveringCloudToAccumulatedPopulations.remove(singleCoveringCloudForTown[j]);
+                    singleCoveringCloudForTown[j] = -1;
+                }
+            }
+            startTownForCloud[i] = lowerTown;
+            endTownForCloud[i] = higherTown;
+        }
+
+        long existingSunnyPopulation = 0;
+
+        /**
+         * Traverse the towns to find the cloud that can be removed to increase the additional sunny population
+         */
+        for (int i = 0; i < n; i++) {
+            Integer singleCoveringCloud = singleCoveringCloudForTown[i];
+            if (singleCoveringCloud == null) {
+                existingSunnyPopulation += town[i].population;
+            }
+        }
+
+        System.out.println(existingSunnyPopulation + maxAdditionalSunnyPopulation);
+    }
+
+    static void getMaxSunnyPopulation4(int n, Town[] town, int m, int[] cloudLocation, int[] cloudRange) {
+        //sort towns
+        Arrays.sort(town, Comparator.comparingInt(Town::getLocation));
+
+        Integer[] singleCoveringCloudForTown = new Integer[n];
+        int[] startTownForCloud = new int[m];
+        int[] endTownForCloud = new int[m];
+
+        Map<Integer, Long> singleCoveringCloudToAccumulatedPopulations = new HashMap<>();
+        Set<Integer> citiesWithoutCoveringCloud = IntStream.range(0, n).boxed().collect(Collectors.toSet());
+        long existingSunnyPopulation = 0;
+        long maxAdditionalSunnyPopulation = 0;
+
+        for (int i = 0; i < m; i++) {
+            int startOfCloud = cloudLocation[i]-cloudRange[i];
+            int lowerTown = binarySearchGreaterOrEqualToKey(town, startOfCloud);
+            if (lowerTown == -1) {
+                continue;
+            }
+            int endOfCloud = cloudLocation[i]+cloudRange[i];
+            int higherTown = binarySearchLessOrEqualToKey(town, endOfCloud);
+            if (higherTown == -1) {
+                continue;
+            }
+
+            for (int j = lowerTown; j <= higherTown; j++) {
+                citiesWithoutCoveringCloud.remove(j);
+                if (singleCoveringCloudForTown[j] == null) {
+                    singleCoveringCloudForTown[j] = i;
+                    long currentAccumulation = Optional.ofNullable(singleCoveringCloudToAccumulatedPopulations.get(i)).orElse(0L);
+                    singleCoveringCloudToAccumulatedPopulations.put(i, currentAccumulation + town[j].population);
+                    maxAdditionalSunnyPopulation = Math.max(maxAdditionalSunnyPopulation, singleCoveringCloudToAccumulatedPopulations.get(i));
+                } else if (singleCoveringCloudForTown[j] >= 0) {
+                    singleCoveringCloudToAccumulatedPopulations.remove(singleCoveringCloudForTown[j]);
+                    singleCoveringCloudForTown[j] = -1;
+                }
+            }
+            startTownForCloud[i] = lowerTown;
+            endTownForCloud[i] = higherTown;
+        }
+
+
+
+        /**
+         * Traverse the towns to find the cloud that can be removed to increase the additional sunny population
+         */
+        for (int i : citiesWithoutCoveringCloud) {
+            existingSunnyPopulation += town[i].population;
+        }
+
+        System.out.println(existingSunnyPopulation + maxAdditionalSunnyPopulation);
     }
 }

@@ -52,9 +52,9 @@ public class PeakElement {
         if (n == 0)
             return null;
         if (n == 1)
-             return 0;
+            return 0;
         if (n == 2)
-             return array[0]>array[1]?0:1;
+            return array[0]>array[1]?0:1;
 
         for (int i = 1; i < n-1; i++) {
             if (array[i-1] <= array[i] && array[i] >= array[i+1])
