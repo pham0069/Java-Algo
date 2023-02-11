@@ -1,15 +1,21 @@
 package algorithm.string;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.math.BigDecimal;
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.InputMismatchException;
+import java.util.List;
 import java.util.Queue;
 import java.util.Scanner;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 /**
  * https://www.hackerrank.com/challenges/determining-dna-health/problem
@@ -84,8 +90,41 @@ import java.util.Scanner;
  * For each gene, find out how many time it appears in the DNA strand
  */
 public class DeterminingDNAHealth {
+    private static List<String> genes;
+    private static List<Integer> health;
 
+    private static void getTotalHealth(int first, int last, String str) {
 
-    public static void main(String[] args) {
+    }
+
+    public static void main(String[] args) throws IOException {
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
+
+        int n = Integer.parseInt(bufferedReader.readLine().trim());
+
+        genes = Stream.of(bufferedReader.readLine().replaceAll("\\s+$", "").split(" "))
+                .collect(Collectors.toList());
+
+        health = Stream.of(bufferedReader.readLine().replaceAll("\\s+$", "").split(" "))
+                .map(Integer::parseInt)
+                .collect(Collectors.toList());
+
+        int s = Integer.parseInt(bufferedReader.readLine().trim());
+
+        IntStream.range(0, s).forEach(sItr -> {
+            try {
+                String[] firstMultipleInput = bufferedReader.readLine().replaceAll("\\s+$", "").split(" ");
+
+                int first = Integer.parseInt(firstMultipleInput[0]);
+
+                int last = Integer.parseInt(firstMultipleInput[1]);
+
+                String d = firstMultipleInput[2];
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
+
+        bufferedReader.close();
     }
 }
